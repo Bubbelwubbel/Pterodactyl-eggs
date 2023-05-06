@@ -1,0 +1,52 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2023-05-06T17:00:44+02:00",
+    "name": "PocketMine-MP",
+    "author": "bubbelwubbel07@gmail.com",
+    "description": "PocketMine-MP Egg",
+    "features": null,
+    "docker_images": {
+        "ghcr.io\/parkervcp\/yolks:debian": "ghcr.io\/parkervcp\/yolks:debian"
+    },
+    "file_denylist": [],
+    "startup": ".\/bin\/php7\/bin\/php .\/PocketMine-MP.phar",
+    "config": {
+        "files": "{\r\n    \"server.properties\": {\r\n        \"parser\": \"properties\",\r\n        \"find\": {\r\n            \"server-ip\": \"0.0.0.0\",\r\n            \"enable-query\": \"true\",\r\n            \"server-port\": \"{{server.build.default.port}}\",\r\n            \"query.port\": \"{{server.build.default.port}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \")! For help, type \"\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n\r\napt update\r\napt install -y git curl wget jq file tar unzip zip\r\n\r\ncd \/mnt\/server\r\nARCH=$([[ \"$(uname -m)\" == \"x86_64\" ]] && echo \"amd64\" || echo \"arm64\")\r\n\r\nfunction parse_json {\r\n\techo \"$1\" | grep \"\\\"$2\\\"\" | cut -d ':' -f2- | tr -d ' \",'\r\n}\r\n\r\nif [[ \"${PMMP_VERSION}\" == \"auto\" ]]; then\r\n    echo \"Search for the latest PocketMine-MP version...\"\r\n    VERSION_DATA=$(curl -ssL \"https:\/\/update.pmmp.io\/api\")\r\n    BASE_VERSION=$(parse_json \"$VERSION_DATA\" base_version)\r\n    echo \"PocketMine-MP Version $BASE_VERSION founded. This version is now downloading...\"\r\n            \r\n    curl -ssL -o PocketMine-MP.phar \"https:\/\/github.com\/pmmp\/PocketMine-MP\/releases\/download\/$BASE_VERSION\/PocketMine-MP.phar\"\r\nelse\r\n    echo \"Search for the PocketMine version ${PMMP_VERSION}...\"\r\n    BASE_VERSION=${PMMP_VERSION}\r\n    \r\n    curl -ssL -o PocketMine-MP.phar \"https:\/\/github.com\/pmmp\/PocketMine-MP\/releases\/download\/$PMMP_VERSION\/PocketMine-MP.phar\"\r\nfi\r\n\r\nif [[ ! -f \"\/mnt\/server\/PocketMine-MP.phar\" ]]\r\nthen\r\n    echo \"! The PocketMine-MP.phar was not found. There was a download error. Please reinstall the server!\"\r\n    exit 1\r\nfi\r\n\r\necho \"Search for PHP ${PHP_VERSION}...\"\r\nif [[ \"${ARCH}\" == \"amd64\" ]]; then\r\n    echo -e \"\\nDownloading PHP ${PHP_VERSION}...\"\r\n    PMMP_VER=${BASE_VERSION:0:1}\r\n    \r\n    curl -sSL -o php.binary.tar.gz \"https:\/\/github.com\/pmmp\/PHP-Binaries\/releases\/download\/php-${PHP_VERSION}-latest\/PHP-Linux-x86_64-PM${PMMP_VER}.tar.gz\"\r\n\r\n    echo -e \"\\nConfigure the PHP Binary...\"\r\n    tar -xzvf php.binary.tar.gz\r\n    rm -rf \/mnt\/server\/php.binary.tar.gz\r\nelse\r\n    wget https:\/\/raw.githubusercontent.com\/pmmp\/php-build-scripts\/stable\/compile.sh -O compile.sh \r\n    chmod +x compile.sh\r\n    \r\n    echo \"\\nThis action may take a little longer. Please wait a little...\"\r\n    .\/compile.sh\r\n    rm compile.sh\r\n    rm -rf install_data\/\r\n    \r\n    echo -e \"\\nConfigure the PHP Binary...\"\r\nfi\r\n\r\nEXTENSION_DIR=$(find \"bin\" -name *debug-zts*)\r\ngrep -q '^extension_dir' bin\/php7\/bin\/php.ini && sed -i'bak' \"s{^extension_dir=.*{extension_dir=\\\"$EXTENSION_DIR\\\"{\" bin\/php7\/bin\/php.ini || echo \"extension_dir=\\\"$EXTENSION_DIR\\\"\" >>bin\/php7\/bin\/php.ini\r\n\r\n\r\necho -e \"\\n\\nThe server was installed. Enjoy with using from this server.\"",
+            "container": "ghcr.io\/pterodactyl\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "PocketMine Version",
+            "description": "Change from PocketMine Version.\r\n\r\n'auto' is the newste stable version from PocketMine.\r\nanother Version is your select version! \r\nExample: type 4.10.2 for the PocketMine version 4.10.2",
+            "env_variable": "PMMP_VERSION",
+            "default_value": "auto",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "PHP Version",
+            "description": "Change the PHP Version",
+            "env_variable": "PHP_VERSION",
+            "default_value": "8.2",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:8.2,8.1,8.0",
+            "field_type": "text"
+        }
+    ]
+}
