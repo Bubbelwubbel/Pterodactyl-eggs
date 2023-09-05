@@ -1,0 +1,44 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2023-09-05T12:55:20+02:00",
+    "name": "Discord Python",
+    "author": "bubbelwubbel07@gmail.com",
+    "description": "Discord Python Egg",
+    "features": null,
+    "docker_images": {
+        "Python 3.11": "ghcr.io\/parkervcp\/yolks:python_3.11",
+        "Python 3.10": "ghcr.io\/parkervcp\/yolks:python_3.10",
+        "Python 3.9": "ghcr.io\/parkervcp\/yolks:python_3.9"
+    },
+    "file_denylist": [],
+    "startup": "if [ -f \/mnt\/server\/requirements.txt ]; then echo \"Download all bot packages..\"; pip install -U --prefix .local -r requirements.txt; fi; \/usr\/local\/bin\/python \/home\/container\/{{PY_FILE}}",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"\"\r\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n\r\napt update\r\napt install -y git curl jq file unzip make gcc g++ python python-dev libtool\r\n\r\nmkdir -p \/mnt\/server\r\ncd \/mnt\/server\r\n\r\nexport HOME=\/mnt\/server\r\n\r\nif [ ! -e \/mnt\/server\/${PY_FILE} ]; then\r\n  echo \"print ('main.py was created by pterodactyl panel.')\" > \"${PY_FILE}\"\r\nfi\r\n\r\nif [ -f \/mnt\/server\/requirements.txt ]; then\r\n    echo \"Download all bot packages..\"\r\n    \r\n    pip install -U --prefix .local -r requirements.txt\r\nfi\r\n\r\necho -e \"The server was installed. Enjoy with using from this server.\"\r\nexit 0",
+            "container": "python:3.8-slim-bullseye",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Python Main File",
+            "description": "The file that starts the App.",
+            "env_variable": "PY_FILE",
+            "default_value": "main.py",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        }
+    ]
+}
